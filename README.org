@@ -1,12 +1,12 @@
 #+TITLE: Emacs configuration
-#+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+#+PROPERTY: header-args:emacs-lisp :tangle ~/.config/emacs/init.el :mkdirp yes
 #+STARTUP: overview
 
-The best place to read this file is at https://quarkQuark.github.io/literate-config/emacs. The org-mode source is stored at https://github.com/quarkQuark/dotfiles/tree/master/.config/emacs.
+The best place to read this file is at https://quarkQuark.github.io/literate-config/emacs. The org-mode source is stored at https://github.com/quarkQuark/emacs-config.
 
 * Contents :TOC:QUOTE:noexport:
 #+BEGIN_QUOTE
-- [[#installation][Installation]]
+- [[#installation-guide][Installation guide]]
 - [[#set-up][Set-up]]
   - [[#early-init][Early Init]]
   - [[#package-management][Package management]]
@@ -33,17 +33,17 @@ The best place to read this file is at https://quarkQuark.github.io/literate-con
 - [[#miscellaneous][Miscellaneous]]
 #+END_QUOTE
 
-* Installation
+* Installation guide
 
-Emacs expects to find user configuration in =.config/emacs/init.el=.  This *literate configuration file* must be *tangled* in order to generate that file and apply the configuration. Once Emacs is installed, this can be done from the command line with the following command:
+Emacs expects to find user configuration in =.config/emacs/init.el=.  This *literate configuration file* must be *tangled* in order to generate that file and apply the configuration. Once Emacs is installed, change to the same directory as this file and run
 
 #+begin_src shell
 
-  emacs --batch -l org --eval '(org-babel-tangle-file "~/.config/emacs/README.org")'
+  emacs --batch -l org --eval '(org-babel-tangle-file README.org)'
 
 #+end_src
 
-Make sure to also download the fonts [[https://github.com/tonsky/FiraCode][Fira Code]], [[https://edwardtufte.github.io/et-book/][ET Book]] and Symbola (known to Emacs as =ETBembo=):
+Make sure to also download the fonts [[https://github.com/tonsky/FiraCode][Fira Code]], [[https://edwardtufte.github.io/et-book/][ET Book]] (known to Emacs as =ETBembo=) and Symbola:
 
 #+begin_src shell
 
@@ -57,7 +57,7 @@ When Emacs is launched for the first time, it will spend some time downloading a
 * Set-up
 ** Early Init
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle ./early-init.el
+:header-args:emacs-lisp: :tangle ~/.config/emacs/early-init.el
 :END:
 
 Avoid garbage collection at startup (the threshold must be raised back to a reasonable level afterwards). When I implemented this, the number of garbage collections on startup went down from 39 to 2 and the startup time went down from 1.4 to 0.83 seconds.
@@ -134,7 +134,7 @@ Stop unwanted UI elements from loading
 
 Do not use package.el, because I use straight.el instead
 
-#+begin_src emacs-lisp :tangle ./early-init.el
+#+begin_src emacs-lisp :tangle ~/.config/emacs/early-init.el
   (setq package-enable-at-startup nil)
 #+end_src
 
@@ -411,7 +411,7 @@ This command (bound to =SPC f d=) allows me to search for and open dotfiles.
   (setq quark/dotfile-list
         '(("Dotfiles README" . "~/README.org")
           ("Shells"          . "~/.config/Shells.org")
-          ("Emacs"           . "~/.config/emacs/README.org")
+          ("Emacs"           . "~/Projects/emacs-config/README.org")
           ("XMonad"          . "~/Projects/xmonad-quark/README.org")))
 
   (defun quark/ivy-open-dotfile ()

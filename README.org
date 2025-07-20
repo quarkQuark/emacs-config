@@ -147,6 +147,65 @@ After package manager:
 
 * User interface
 ** Aesthetics
+
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :custom
+    (display-line-numbers 'relative)
+    :config
+    (scroll-bar-mode -1)
+    (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (set-fringe-mode 10)) ; add padding on left and right
+
+  ;; Elpaca currently can't find this, for some reason.
+  ;; (use-package emacs-dashboard
+  ;;   :hook
+  ;;   (elpaca-after-init . #'dashboard-insert-startupify-lists)
+  ;;   (elpaca-after-init . #'dashboard-initialize)
+  ;;   :config
+  ;;   (dashboard-setup-startup-hook))
+
+  (use-package doom-themes
+    :config
+    (doom-themes-org-config)
+    (load-theme 'doom-one 'no-confirm))
+
+  (use-package doom-modeline
+    :custom
+    (doom-modeline-buffer-encoding nil) ; don't show buffer encoding
+    :config
+    (column-number-mode) ; show column number
+    (size-indication-mode) ; show file size
+    (doom-modeline-mode))
+
+  (use-package solaire-mode
+    :config (solaire-global-mode))
+
+  ;; Dim inactive buffer
+  (use-package dimmer
+    :custom
+    ;; Don't dim the active buffer when another window is focused.
+    (dimmer-watch-frame-focus-events nil)
+    :config
+    (dimmer-configure-magit)
+    (dimmer-configure-org)
+    (dimmer-configure-which-key)
+    (dimmer-mode))
+
+  (use-package colorful-mode
+    :custom
+    (css-fontify-colors) ;; otherwise this interferes
+    ;(colorful-only-strings 'only-prog) ;; uncomment if I get annoyed
+    :config
+    (colorful-mode))
+
+  (use-package diff-hl
+    :hook (magit-post-refresh . 'diff-hl-magit-post-refresh)
+    :config (global-diff-hl-mode))
+#+end_src
+
 ** Keybindings
 
 #+begin_src emacs-lisp

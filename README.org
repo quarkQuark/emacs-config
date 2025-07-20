@@ -148,7 +148,55 @@ After package manager:
 * User interface
 ** Aesthetics
 ** Keybindings
-** Minibuffer
+
+#+begin_src emacs-lisp
+  (use-package which-key
+    :ensure nil :after evil
+    :custom (which-key-idle-delay 0.3)
+    :config (which-key-mode))
+#+end_src
+
+To enable mapping =jk= to escape, we use the =:chords= keyword from =use-package-chords=.
+This needs to be enabled early in =init.el= so that we can run =elpaca-wait= before using it.
+
+#+begin_src emacs-lisp :tangle no :noweb-ref post-packagemanager
+  (use-package use-package-chords :config (key-chord-mode))
+#+end_src
+
+*** Evil
+
+#+begin_src emacs-lisp
+  (use-package evil
+    :demand t
+    :init
+    (setq evil-want-keybinding nil) ;; disable poor man's evil-collection
+    :chords
+    (("jk" . evil-normal-state))
+    :custom
+    (evil-move-cursor-back nil) ;; keep cursor in place on leaving insert state
+    (evil-want-Y-yank-to-eol 1) ;; instead of Y yanking the whole line
+    (evil-undo-system #'undo-redo) ;; instead of Y yanking the whole line
+    :config
+    (evil-mode))
+
+  (use-package evil-collection
+    :after evil
+    :config (evil-collection-init))
+
+  ;; More ergonomic access to modifier keybindings
+  ;; SPC x -> C-x C-... (press SPC again to cancel C-)
+  ;; SPC c -> C-c C-... (press SPC again to cancel C-)
+  ;; SPC h -> C-h
+  ;; SPC m -> M-...; SPC M -> C-M-...
+  ;; SPC _ -> C-c ...
+  (use-package evil-keypad
+   :after evil
+   :bind
+   (:map evil-keypad-state-keymap ("C-h" . #'describe-keymap))
+   :custom (evil-keypad-C-M-trigger ?M)
+   :config (evil-keypad-global-mode))
+#+end_src
+
 ** Completion
 
 * Writing

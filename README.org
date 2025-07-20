@@ -199,6 +199,101 @@ This needs to be enabled early in =init.el= so that we can run =elpaca-wait= bef
 
 ** Completion
 
+**** Built-in options
+
+#+begin_src emacs-lisp
+  (use-package emacs
+    :ensure nil
+    :custom
+    (enable-recursive-minibuffers t)
+    ;; I don't completely understand what cursor-intangible-mode changes here,
+    ;; but it seems to be recommended in the Vertico docs.
+    (minibuffer-prompt-properties
+     '(read-only t cursor-intangible t face minibuffer-prompt))
+    ;; Hide commands which do not work in the current mode.
+    (read-extended-command-predicate #'command-completion-default-include-p)
+    (completion-ignore-case t))
+
+  ;; Persist minibuffer history over restarts.
+  (use-package savehist
+    :ensure nil
+    :config (savehist-mode))
+#+end_src
+
+**** [[https://github.com/minad/vertico][Vertico]]: VERTical Interactive COmpletion
+
+#+begin_src emacs-lisp
+  ;; VERTical Interactive COmpletion
+  (use-package vertico
+    :bind
+    (:map vertico-map
+  	("C-j" . #'vertico-next)
+  	("C-k" . #'vertico-previous))
+    :config
+    (vertico-mode)
+    (vertico-multiform-mode)
+    (vertico-mouse-mode))
+
+  (use-package vertico-directory
+    :ensure nil  ;; part of vertico
+    :hook
+    ;; Make .../~ instantly replace a file path with ~/.
+    (rfn-eshadow-update-overlay . vertico-directory-tidy)
+    :custom
+    (vertico-multiform-categories
+      ;; Backspace enters parent directory.
+      '((file (:keymap . vertico-directory-map)))))
+#+end_src
+
+**** [[https://github.com/minad/orderless][Orderless]] (fancy pattern matching)
+
+Orderless divides search patterns into orderless space-separated segments, and provides bangs like
+- =,= to match initials
+- =^= to match the beginning of an item
+- =!= for negation.
+
+#+begin_src emacs-lisp
+  (use-package orderless
+    :custom
+    (completion-styles '(orderless basic)) ; enable orderless
+    (completion-category-overrides
+     ;; TRAMP hostname completion requires `basic' to be tried first.
+     ;; `partial-completion' allows wildcards and things like /u/s/l ->
+     ;; /usr/share/local
+     '((file (styles basic partial-completion)))))
+#+end_src
+
+**** [[https://github.com/minad/marginalia][Marginalia]]
+
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :config (marginalia-mode))
+#+end_src
+
+**** [[https://github.com/minad/consult][Consult]]
+
+#+begin_src emacs-lisp
+  (use-package consult
+    :bind
+    (("C-c b" . #'consult-buffer)
+     :prefix-map quark/search-prefix-map :prefix "C-c f"
+     ("l" . #'consult-line)
+     ("r" . #'consult-ripgrep)
+     ("R" . #'consult-grep)
+     ("f" . #'consult-fd)
+     ("F" . #'consult-find)
+     :prefix-map quark/settings-prefix-map :prefix "C-c s"
+     ("t" . #'consult-theme)
+     :prefix-map quark/ide-prefix-map :prefix "C-c l"
+     ("e" . #'consult-error)
+     ("x" . #'consult-xref)
+     :prefix-map quark/org-prefix-map :prefix "C-c o"
+     ("o" . #'consult-org-heading))
+    :custom
+    (xref-show-xrefs-function #'consult-xref)
+    (xref-show-definitions-function #'consult-cref))
+#+end_src
+
 * Writing
 ** General
 ** Org

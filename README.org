@@ -167,8 +167,42 @@ After package manager:
 ** Web development
 
 * Features
-** Magit
+** Git integration
+
+#+begin_src emacs-lisp
+  ;; Magit requires transient v0.9.3, but built-in is currently v0.7.2.2
+  (use-package transient)
+
+  (use-package magit
+    :after transient
+    :init
+    (setq forge-add-default-bindings nil)
+    (setq forge-add-default-sections nil)
+    :bind
+    (:prefix-map quark/vc-prefix-map :prefix "C-c g"
+     ("g" . #'magit-status)))
+
+  ;; Not usable until I've set up an access token.
+  (use-package forge
+    :after magit)
+#+end_src
+
 ** Dired
-** Projectile (or project.el)
+** Projects
+
+Too many weird bugs trying to replace [[kbd:C-x p]] with [[kbd:C-c p]] (for fewer keystrokes using =evil-keypad=).
+Most of the time I've just not been able to get another key to call =project-prefix-map= at all.
+Sometimes I've made that work, but then [[kbd:p]] calls =project-prefix-map= in /insert state/, instead of actually inserting the letter =p=!
+I can't even figure out how do do this using =general.el=.
+
+Probably this means its best to just define a new prefix from scratch.
+#+begin_src emacs-lisp
+  (use-package project
+    :ensure nil
+    :bind
+    (("C-c SPC" . #'project-find-file)
+     :prefix-map quark/project-prefix-map :prefix "C-c p"
+     ("p" . #'project-switch-project)))
+#+end_src
 
 * Miscellany

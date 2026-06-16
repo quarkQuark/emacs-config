@@ -12,6 +12,7 @@ The best place to read this file is at https://quarkQuark.github.io/literate-con
   - [[#package-management][Package management]]
   - [[#no-litteringel][No-littering.el]]
   - [[#utility-functions-and-variables][Utility functions and variables]]
+- [[#new-org-latex-preview-mode][New org-latex-preview-mode]]
 - [[#user-interface][User Interface]]
   - [[#theme][Theme]]
 - [[#keybindings-and-evil-mode][Keybindings and Evil Mode]]
@@ -183,6 +184,43 @@ Update with =(straight-pull-all)= and apply changes by restarting Emacs. View in
   (defvar quark/work-dir (if quark/work-computer-p "~/Work" "~")
     "Directory containing work-related files.")
 
+#+end_src
+
+* New org-latex-preview-mode
+
+#+begin_src emacs-lisp
+  (use-package org
+    :defer
+    :straight `(org
+                :fork (:host nil
+                       :repo "https://git.tecosaur.net/tec/org-mode.git"
+                       :branch "dev"
+                       :remote "tecosaur")
+                :files (:defaults "etc")
+                :build t
+                :pre-build
+                (with-temp-file "org-version.el"
+                 (require 'lisp-mnt)
+                 (let ((version
+                        (with-temp-buffer
+                          (insert-file-contents "lisp/org.el")
+                          (lm-header "version")))
+                       (git-version
+                        (string-trim
+                         (with-temp-buffer
+                           (call-process "git" nil t nil "rev-parse" "--short" "HEAD")
+                           (buffer-string)))))
+                  (insert
+                   (format "(defun org-release () \"The release version of Org.\" %S)\n" version)
+                   (format "(defun org-git-version () \"The truncate git commit hash of Org mode.\" %S)\n" git-version)
+                   "(provide 'org-version)\n")))
+                :pin nil)
+    :hook (org-mode . org-latex-preview-mode)
+    :custom
+    (org-latex-preview-mode-display-live t)
+    ;; Don't reveal on scroll
+    (org-latex-preview-mode-ignored-commands
+      '(next-line previous-line mwheel-scroll scroll-up-command scroll-down-command ultra-scroll)))
 #+end_src
 
 * User Interface
@@ -995,21 +1033,23 @@ The following source block contains a copy of the (quite long!) full definition 
 
 #+end_src
 
-*** Maths and LaTeX fragments
+*** COMMENT Xenops LaTeX rendering
 
 #+begin_src emacs-lisp
 
   ;; Better LaTeX previews (async)
   (use-package xenops
     :hook
-    (org-mode    . xenops-mode)
-    (latex-mode  . xenops-mode)
+    ;(org-mode    . xenops-mode) ;; causes errors with Org v.10 (enable manually instead)
+    (LaTeX-mode  . xenops-mode)
+    ;(org-mode    . (lambda () (add-hook 'after-save-hook 'xenops-render nil 'local)))
     (xenops-mode . quark/xenops-apply-settings))
 
   (defun quark/xenops-apply-settings ()
     "Configure xenops. For some reason I can't set them the usual way with `use-package'."
+    (setq xenops-math-latex-max-tasks-in-flight 6)
     (setq xenops-reveal-on-entry t)
-    (setq xenops-math-image-scale-factor 1.2)
+    (setq xenops-math-image-scale-factor 1.0)
     ;; Workaround for https://github.com/dandavison/xenops/issues/59
     (defun xenops-math-reveal (element)
       "Remove image overlay for ELEMENT.
@@ -1022,6 +1062,29 @@ The following source block contains a copy of the (quite long!) full definition 
       (xenops-math-render-below-maybe element)))
   ;; Investigate xenops-font-family and xenops-font-height, particularly for latex
 
+  ;; Default dvipng doesn't support tikz, but imagemagick is broken
+  ;; Solution from github.com/enseishugi/org-mode-tikz-preview
+  (setq gm-process
+        '(graphicsmagick
+          :programs ("latex" "gm")
+          :description "pdf > png"
+          :message "you need to install the programs: latex and graphicsmagick."
+          :image-input-type "pdf"
+          :image-output-type "png"
+          :image-size-adjust (1.0 . 1.0)
+          :latex-compiler ("pdflatex -interaction nonstopmode -output-directory %o %f")
+          :image-converter ("gm convert -density %D -trim -antialias %f -quality 100 %O")))
+  ;; (with-eval-after-load 'org
+  ;;     (add-to-list 'org-preview-latex-process-alist gm-process)
+  ;;     (setq org-preview-latex-default-process 'graphicsmagick))
+  (with-eval-after-load 'xenops
+      (add-to-list 'xenops-math-latex-process-alist gm-process)
+      (setq xenops-math-latex-process 'graphicsmagick))
+#+end_src
+
+*** LaTeX entry
+
+#+begin_src emacs-lisp
   (use-package cdlatex
     :hook (org-mode . org-cdlatex-mode))
 
